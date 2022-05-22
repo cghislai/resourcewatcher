@@ -3,7 +3,7 @@ debug: true
 watchedResourceList:
   - kind: Secret
     namespace: ns0
-    labelSelectors: []
+    labelSelectors: [ ]
     fieldSelectors:
       - "metadata.name=mysecret"
     watchAdd: false
@@ -14,7 +14,9 @@ watchedResourceList:
       # Annotating a pod will trigger a rollout
       - actionType: ANNOTATE
         annotatedResourceNamespace: ns0
-        annotatedResourceKind: Pod
+        annotatedResourceKind: DEPLOYMENT_POD_TEMPLATE
+        annotatedResourceFieldSelectors:
+          - "metadata.name=mydeployment"
         annotatedResourceLabelsSelectors:
           - app=my-app
 

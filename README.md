@@ -15,31 +15,30 @@ The list of resources kind supported is limited.
 The list of actions to execute is also limited: currently it only allows annotating another resource with a timestamp (actionTYpe = ANNOTATE).
 This can be used to annotate a pod and trigger redeployment. The list of annotated resource kinds supported is limited as well.
 
+See src/main/resources for an up to date example
+
 ```yaml
+debug: true
+
 watchedResourceList:
   - kind: Secret
-    name: my-secret
     namespace: ns0
+    labelSelectors: [ ]
+    fieldSelectors:
+      - "metadata.name=mysecret"
     watchAdd: false
     watchUpdate: true
     watchDelete: false
 
     actionList:
-      # Annotating a pod will trigger a rollout
-      - actionType: ANNOTATE
+      # Annotating a pod template will trigger a rollout of the deployment
+      - actionType: ANNOTATE_WITH_TIMESTAMP
         annotatedResourceNamespace: ns0
-        annotatedResourceKind: Pod # other resource kind not supported
+        annotatedResourceKind: DEPLOYMENT_POD_TEMPLATE
+        annotatedResourceFieldSelectors:
+          - "metadata.name=mydeployment"
         annotatedResourceLabelsSelectors:
           - app=my-app
-
-
-  - kind: ConfigMap
-    name: my-config
-    namespace: ns1
-  - kind: Pod
-    name: my-pod
-    namespace: ns2
-
 ```
 
 The config file location is read from system env variable "RESOURCE_WATCHER_CONFIG_PATH", or "/var/run/config/resourcewatcher.yaml".

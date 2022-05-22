@@ -14,7 +14,7 @@ public class ResourceActionSpec {
 
     // Annotate another resource with timestampt
     private String annotatedResourceNamespace;
-    private String annotatedResourceKind;
+    private AnnotatedResourceKind annotatedResourceKind;
     private List<String> annotatedResourceFieldSelectors = new ArrayList<>();
     private List<String> annotatedResourceLabelsSelectors = new ArrayList<>();
     private String annotatedResourceAnnotationName = "com.charlyghislain.resourcewatcher.timestamp";

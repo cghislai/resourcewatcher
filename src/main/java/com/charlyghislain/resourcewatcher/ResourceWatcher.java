@@ -19,6 +19,7 @@ import io.kubernetes.client.extended.workqueue.WorkQueue;
 import io.kubernetes.client.informer.SharedIndexInformer;
 import io.kubernetes.client.informer.SharedInformerFactory;
 import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.apis.AppsV1Api;
 import io.kubernetes.client.openapi.apis.CoreV1Api;
 import io.kubernetes.client.openapi.models.V1ConfigMap;
 import io.kubernetes.client.openapi.models.V1ConfigMapList;
@@ -83,6 +84,7 @@ public class ResourceWatcher {
         OkHttpClient httpClient =
                 apiClient.getHttpClient().newBuilder().readTimeout(0, TimeUnit.SECONDS).build();
         apiClient.setHttpClient(httpClient);
+        AppsV1Api appsV1Api = new AppsV1Api(apiClient);
 
         // instantiating an informer-factory, and there should be only one informer-factory
         // globally.
@@ -94,7 +96,7 @@ public class ResourceWatcher {
             String resourceLabel = watchedResource.getKind() + " in namespace " + watchedResource.getNamespace();
             LOG.fine("Creating controller for watched resource " + resourceLabel);
             try {
-                Controller controller = createController(coreV1Api, informerFactory, eventBroadcaster, watchedResource);
+                Controller controller = createController(coreV1Api, appsV1Api, informerFactory, eventBroadcaster, watchedResource);
                 controllerManagerBuilder.addController(controller);
                 LOG.fine(" - added controller " + controller);
             } catch (Exception e) {
@@ -120,12 +122,12 @@ public class ResourceWatcher {
         LOG.fine("ResourceWatcher completed");
     }
 
-    private static Controller createController(CoreV1Api coreV1Api, SharedInformerFactory informerFactory, EventBroadcaster eventBroadcaster,
+    private static Controller createController(CoreV1Api coreV1Api, AppsV1Api appsV1Api, SharedInformerFactory informerFactory, EventBroadcaster eventBroadcaster,
                                                WatchedResource watchedResource) throws Exception {
         SharedIndexInformer<? extends KubernetesObject> nodeInformer = createNodeInformer(informerFactory, watchedResource, coreV1Api);
 
         WatchedResourceReconcilier<? extends KubernetesObject> reconcilier = new WatchedResourceReconcilier<>(
-                coreV1Api, watchedResource, nodeInformer,
+                coreV1Api, appsV1Api, watchedResource, nodeInformer,
                 eventBroadcaster.newRecorder(new V1EventSource().host("localhost").component("resource-watcher")));
 
         Function<WorkQueue<Request>, DefaultControllerWatch<? extends KubernetesObject>> resourceControllerFactory = getResourceControllerFactory(watchedResource);
