@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.charlyghislain</groupId>
+    <artifactId>resourcewatcher</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+
+    <properties>
+        <maven.compiler.source>14</maven.compiler.source>
+        <maven.compiler.target>14</maven.compiler.target>
+    </properties>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://github.com/cghislai/resourceswatcher</url>
+        <developerConnection>ssh:/git@github.com:cghislai/resourceswatcher.git</developerConnection>
+    </scm>
+
+    <build>
+        <finalName>resourcewatcher</finalName>
+        <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.charlyghislain.resourcewatcher.ResourceWatcher</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id> <!-- this is used for inheritance merges -->
+                        <phase>package</phase> <!-- bind to the packaging phase -->
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.kubernetes</groupId>
+            <artifactId>client-java-api</artifactId>
+            <version>13.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.kubernetes</groupId>
+            <artifactId>client-java</artifactId>
+            <version>13.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.kubernetes</groupId>
+            <artifactId>client-java-extended</artifactId>
+            <version>13.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.kubernetes</groupId>
+            <artifactId>client-java-spring-integration</artifactId>
+            <version>13.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.kubernetes</groupId>
+            <artifactId>client-java-proto</artifactId>
+            <version>13.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.kubernetes</groupId>
+            <artifactId>client-java-cert-manager-models</artifactId>
+            <version>10.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.kubernetes</groupId>
+            <artifactId>client-java-prometheus-operator-models</artifactId>
+            <version>10.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.22</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>1.7.32</version>
+        </dependency>
+    </dependencies>
+</project>

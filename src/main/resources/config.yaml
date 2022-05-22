@@ -1,0 +1,21 @@
+debug: true
+
+watchedResourceList:
+  - kind: Secret
+    namespace: ns0
+    labelSelectors: []
+    fieldSelectors:
+      - "metadata.name=mysecret"
+    watchAdd: false
+    watchUpdate: true
+    watchDelete: false
+
+    actionList:
+      # Annotating a pod will trigger a rollout
+      - actionType: ANNOTATE
+        annotatedResourceNamespace: ns0
+        annotatedResourceKind: Pod
+        annotatedResourceLabelsSelectors:
+          - app=my-app
+
+
