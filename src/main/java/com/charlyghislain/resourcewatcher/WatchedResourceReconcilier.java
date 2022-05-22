@@ -76,13 +76,11 @@ public class WatchedResourceReconcilier<T extends KubernetesObject> implements R
         ResourceWatcher.LOG.fine(" - executing action " + actionType + " for " + resourceName + " " + resourceVersion);
 
         try {
-            switch (actionType) {
-                case ANNOTATE -> {
-                    executeAnnotateResourceAction(actionSpec);
-                    return true;
-                }
-                default -> throw new IllegalArgumentException("Action not supported: " + actionType);
+            if (actionType == ResourceActionType.ANNOTATE) {
+                executeAnnotateResourceAction(actionSpec);
+                return true;
             }
+            throw new IllegalArgumentException("Action not supported: " + actionType);
         } catch (Exception e) {
             ResourceWatcher.LOG.log(Level.SEVERE, "Unable to execute action " + actionSpec + " on " + resourceName + " " + kubernetesObject, e);
             return false;
