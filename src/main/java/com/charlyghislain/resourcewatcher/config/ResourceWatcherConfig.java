@@ -13,5 +13,7 @@ public class ResourceWatcherConfig {
     private List<WatchedResource> watchedResourceList = new ArrayList<>();
 
     private Boolean debug;
+    private String namespace;
+    private String leaseName = "resourcewatcher-lease";
 
 }

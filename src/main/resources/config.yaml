@@ -1,4 +1,6 @@
 debug: true
+# Deployment namespace
+namespace: ns0
 
 watchedResourceList:
   - kind: Secret

@@ -122,8 +122,10 @@ public class ResourceWatcher {
         informerFactory.startAllRegisteredInformers();
         ControllerManager controllerManager = controllerManagerBuilder.build();
 
+        String controllerNamespace = config.getNamespace();
+        String leaseName = config.getLeaseName();
         LeaderElectionConfig leaderElectionConfig = new LeaderElectionConfig(
-                new EndpointsLock("kube-system", "leader-election", "resourcewatcher"),
+                new EndpointsLock(controllerNamespace, leaseName, "resourcewatcher"),
                 Duration.ofMillis(10000),
                 Duration.ofMillis(8000),
                 Duration.ofMillis(5000)
