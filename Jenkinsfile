@@ -9,7 +9,7 @@ pipeline {
          description: 'Credential containing the private gpg key (pem)')
         string(name: 'GPG_KEY_FINGERPRINT', defaultValue: '508608F6CF097B4746CB291B5B72FDC1FF81F9ED',
          description: 'The fingerprint of this key to add to trust root')
-        string(name: 'DOCKER_REPO', defaultValue: 'docker.valuya.com', description: 'Docker repo')
+        string(name: 'DOCKER_REPO', defaultValue: 'ghcr.io/cghislai', description: 'Docker repo')
     }
     options {
         disableConcurrentBuilds()
