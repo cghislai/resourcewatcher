@@ -178,7 +178,7 @@ public class ResourceWatcher {
 
     private static DefaultControllerWatch<V1Pod> buildPodController(WatchedResource watchedResource, WorkQueue<Request> workQueue) {
         return ControllerBuilder.controllerWatchBuilder(V1Pod.class, workQueue)
-                .withWorkQueueKeyFunc((V1Pod node) -> new Request(node.getMetadata().getName())) // optional, default to
+                .withWorkQueueKeyFunc((V1Pod node) -> new Request(node.getMetadata().getNamespace(), node.getMetadata().getName())) // optional, default to
                 .withOnAddFilter((V1Pod createdNode) -> checkObjectWatchedOnAdd(createdNode, watchedResource))
                 .withOnUpdateFilter((V1Pod oldNode, V1Pod newNode) -> checkObjectWatchedOnUpdate(oldNode, watchedResource))
                 .withOnDeleteFilter((V1Pod deletedNode, Boolean stateUnknown) -> checkObjectWatchedOnDelete(deletedNode, watchedResource))
@@ -187,7 +187,7 @@ public class ResourceWatcher {
 
     private static DefaultControllerWatch<V1Secret> buildSecretController(WatchedResource watchedResource, WorkQueue<Request> workQueue) {
         return ControllerBuilder.controllerWatchBuilder(V1Secret.class, workQueue)
-                .withWorkQueueKeyFunc((V1Secret node) -> new Request(node.getMetadata().getName())) // optional, default to
+                .withWorkQueueKeyFunc((V1Secret node) -> new Request(node.getMetadata().getNamespace(), node.getMetadata().getName())) // optional, default to
                 .withOnAddFilter((V1Secret createdNode) -> checkObjectWatchedOnAdd(createdNode, watchedResource))
                 .withOnUpdateFilter((V1Secret oldNode, V1Secret newNode) -> checkObjectWatchedOnUpdate(oldNode, watchedResource))
                 .withOnDeleteFilter((V1Secret deletedNode, Boolean stateUnknown) -> checkObjectWatchedOnDelete(deletedNode, watchedResource))
@@ -196,7 +196,7 @@ public class ResourceWatcher {
 
     private static DefaultControllerWatch<V1ConfigMap> buildConfigMapController(WatchedResource watchedResource, WorkQueue<Request> workQueue) {
         return ControllerBuilder.controllerWatchBuilder(V1ConfigMap.class, workQueue)
-                .withWorkQueueKeyFunc((V1ConfigMap node) -> new Request(node.getMetadata().getName())) // optional, default to
+                .withWorkQueueKeyFunc((V1ConfigMap node) -> new Request(node.getMetadata().getNamespace(), node.getMetadata().getName())) // optional, default to
                 .withOnAddFilter((V1ConfigMap createdNode) -> checkObjectWatchedOnAdd(createdNode, watchedResource))
                 .withOnUpdateFilter((V1ConfigMap oldNode, V1ConfigMap newNode) -> checkObjectWatchedOnUpdate(oldNode, watchedResource))
                 .withOnDeleteFilter((V1ConfigMap deletedNode, Boolean stateUnknown) -> checkObjectWatchedOnDelete(deletedNode, watchedResource))
