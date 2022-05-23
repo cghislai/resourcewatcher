@@ -19,6 +19,7 @@ import io.kubernetes.client.extended.workqueue.WorkQueue;
 import io.kubernetes.client.informer.SharedIndexInformer;
 import io.kubernetes.client.informer.SharedInformerFactory;
 import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.Configuration;
 import io.kubernetes.client.openapi.apis.AppsV1Api;
 import io.kubernetes.client.openapi.apis.CoreV1Api;
 import io.kubernetes.client.openapi.models.V1ConfigMap;
@@ -29,9 +30,11 @@ import io.kubernetes.client.openapi.models.V1PodList;
 import io.kubernetes.client.openapi.models.V1Secret;
 import io.kubernetes.client.openapi.models.V1SecretList;
 import io.kubernetes.client.util.CallGeneratorParams;
+import io.kubernetes.client.util.ClientBuilder;
 import io.kubernetes.client.util.Yaml;
 import okhttp3.OkHttpClient;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -79,11 +82,23 @@ public class ResourceWatcher {
             LOG.log(Level.INFO, "Configuration: \n" + configString);
         }
 
-        CoreV1Api coreV1Api = new CoreV1Api();
-        ApiClient apiClient = coreV1Api.getApiClient();
-        OkHttpClient httpClient =
-                apiClient.getHttpClient().newBuilder().readTimeout(0, TimeUnit.SECONDS).build();
-        apiClient.setHttpClient(httpClient);
+        ApiClient apiClient;
+        try {
+            apiClient = ClientBuilder.cluster().build();
+        } catch (IOException e) {
+            LOG.log(Level.SEVERE, "Unable to create lubernetes cluter client: " + e.getMessage(), e);
+            System.exit(1);
+            return;
+        }
+        if (debug) {
+            apiClient.setDebugging(true);
+        }
+
+//        OkHttpClient httpClient = apiClient.getHttpClient().newBuilder().readTimeout(0, TimeUnit.SECONDS).build();
+//        apiClient.setHttpClient(httpClient);
+        Configuration.setDefaultApiClient(apiClient);
+
+        CoreV1Api coreV1Api = new CoreV1Api(apiClient);
         AppsV1Api appsV1Api = new AppsV1Api(apiClient);
 
         // instantiating an informer-factory, and there should be only one informer-factory
