@@ -1,4 +1,5 @@
 FROM openjdk:14-slim
+LABEL org.opencontainers.image.source "https://github.com/cghislai/resourceswatcher"
 
 ADD target/resourcewatcher-jar-with-dependencies.jar /resourcewatcher.jar
 
