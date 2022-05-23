@@ -34,7 +34,6 @@ public class WatchedResourceReconcilier<T extends KubernetesObject> implements R
     private CoreV1Api coreV1Api;
     private WatchedResource resourceWatcherConfig;
     private SharedIndexInformer<? extends KubernetesObject> indexInformer;
-    private final Lister<? extends KubernetesObject> lister;
     private final EventRecorder eventRecorder;
 
     public WatchedResourceReconcilier(CoreV1Api coreV1Api, AppsV1Api appsV1Api,
@@ -46,11 +45,17 @@ public class WatchedResourceReconcilier<T extends KubernetesObject> implements R
         this.resourceWatcherConfig = watchedResource;
         this.indexInformer = informer;
         this.eventRecorder = recorder;
-        this.lister = new Lister<>(informer.getIndexer());
     }
 
     @Override
     public Result reconcile(Request request) {
+        Lister<? extends KubernetesObject> lister;
+        if (request.getNamespace() == null) {
+            lister = new Lister<>(this.indexInformer.getIndexer());
+        } else {
+            lister = new Lister<>(this.indexInformer.getIndexer(), request.getNamespace());
+        }
+
         KubernetesObject indexedObject = lister.get(request.getName());
         if (indexedObject == null) {
             ResourceWatcher.LOG.warning("Resource not found in index: " + request.getName() + " in namespace " + request.getNamespace());
