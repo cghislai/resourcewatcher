@@ -21,6 +21,7 @@ import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import io.kubernetes.client.openapi.models.V1PodTemplateSpec;
 import io.kubernetes.client.util.Yaml;
 
+import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -84,6 +85,7 @@ public class WatchedResourceReconcilier<T extends KubernetesObject> implements R
         String resourceName = resourceMetadata.getName();
         String resourceVersion = resourceMetadata.getResourceVersion();
         ResourceWatcher.LOG.fine(" - executing action " + actionType + " for " + resourceName + " " + resourceVersion);
+        String errorMessage = "Unable to execute action " + actionSpec + " on " + resourceName + " : ";
 
         try {
             if (actionType == ResourceActionType.ANNOTATE_WITH_TIMESTAMP) {
@@ -91,8 +93,11 @@ public class WatchedResourceReconcilier<T extends KubernetesObject> implements R
                 return true;
             }
             throw new IllegalArgumentException("Action not supported: " + actionType);
+        } catch (ApiException e) {
+            logApiError(errorMessage, e);
+            return false;
         } catch (Exception e) {
-            ResourceWatcher.LOG.log(Level.SEVERE, "Unable to execute action " + actionSpec + " on " + resourceName + " " + kubernetesObject, e);
+            ResourceWatcher.LOG.log(Level.SEVERE, errorMessage + e.getMessage(), e);
             return false;
         }
     }
@@ -105,14 +110,22 @@ public class WatchedResourceReconcilier<T extends KubernetesObject> implements R
 
         switch (annotatedKind) {
             case DEPLOYMENT_POD_TEMPLATE: {
-                V1DeploymentList v1DeploymentList1 = appsV1Api.listNamespacedDeployment(annotatedResourceNamespace, null, null, null,
-                        String.join(",", annotatedResourceFieldSelectors),
-                        String.join(",", annotatedResourceLabelsSelectors),
-                        null, null, null, null, null
-                );
+                V1DeploymentList v1DeploymentList1;
+                String errorMessage = "Unable to list deployment in namespace " + annotatedResourceNamespace;
+                try {
+                    v1DeploymentList1 = appsV1Api.listNamespacedDeployment(annotatedResourceNamespace,
+                            null, null, null,
+                            String.join(",", annotatedResourceFieldSelectors),
+                            String.join(",", annotatedResourceLabelsSelectors),
+                            null, null, null, null, null
+                    );
+                } catch (ApiException e) {
+                    logApiError(errorMessage, e);
+                    throw new Exception(errorMessage, e);
+                }
 
                 if (v1DeploymentList1.getItems().isEmpty()) {
-                    throw new Exception("No deployment found");
+                    throw new Exception("No deployment found in namespace " + annotatedResourceNamespace);
                 }
                 for (V1Deployment deployment : v1DeploymentList1.getItems()) {
                     annotateDeploymentPodSpec(deployment, actionSpec);
@@ -135,11 +148,13 @@ public class WatchedResourceReconcilier<T extends KubernetesObject> implements R
 
         String deploymentName = deployment.getMetadata().getName();
         String deploymentNamespace = deployment.getMetadata().getNamespace();
+        String errorMessage = "Unable to update pod spec annotations on deployment " + deploymentName + " in namespace " + deploymentNamespace;
         try {
             appsV1Api.replaceNamespacedDeployment(deploymentName, deploymentNamespace, updatedDeployment, null, null, null);
-            ResourceWatcher.LOG.fine("Updated pod spec annotations on deployment " + deploymentName + " in namesapce " + deploymentNamespace);
+            ResourceWatcher.LOG.fine("Updated pod spec annotations on deployment " + deploymentName + " in namespace " + deploymentNamespace);
         } catch (ApiException e) {
-            throw new Exception("Unable to update pod spec annotations on deployment " + deploymentName + " in namespace " + deploymentNamespace, e);
+            logApiError(errorMessage, e);
+            throw new Exception(errorMessage, e);
         }
     }
 
@@ -147,6 +162,12 @@ public class WatchedResourceReconcilier<T extends KubernetesObject> implements R
     public static <T> T deepCopy(T rd) {
         Class<T> resourceClass = (Class<T>) rd.getClass();
         return Yaml.loadAs(Yaml.dump(rd), resourceClass);
+    }
+
+    private void logApiError(String errorMessage, ApiException apiException) {
+        String apiErrorMessage = MessageFormat.format("Api error: {0} {1}: {2}", apiException.getResponseHeaders().get("status"),
+                apiException.getCode(), apiException, apiException.getResponseBody());
+        ResourceWatcher.LOG.log(Level.SEVERE, errorMessage + apiErrorMessage, apiException);
     }
 
 }

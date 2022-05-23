@@ -90,9 +90,10 @@ public class ResourceWatcher {
             System.exit(1);
             return;
         }
-        if (debug) {
-            apiClient.setDebugging(true);
-        }
+        // Cannot debug client using watch.
+//        if (debug) {
+//            apiClient.CsetDebugging(true);
+//        }
 
 //        OkHttpClient httpClient = apiClient.getHttpClient().newBuilder().readTimeout(0, TimeUnit.SECONDS).build();
 //        apiClient.setHttpClient(httpClient);
