@@ -27,6 +27,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Level;
 
 public class WatchedResourceReconcilier<T extends KubernetesObject> implements Reconciler {
@@ -142,7 +143,9 @@ public class WatchedResourceReconcilier<T extends KubernetesObject> implements R
         V1DeploymentSpec spec = updatedDeployment.getSpec();
         V1PodTemplateSpec podTemplateSpec = spec.getTemplate();
         V1ObjectMeta podTemplateSpecMetadata = podTemplateSpec.getMetadata();
-        HashMap<String, String> newPodannotations = new HashMap<>(podTemplateSpecMetadata.getAnnotations());
+        HashMap<String, String> newPodannotations = new HashMap<>();
+        Optional.ofNullable(podTemplateSpecMetadata.getAnnotations())
+                        .ifPresent(newPodannotations::putAll);
         newPodannotations.put(annotationName, annotationValue);
         podTemplateSpecMetadata.setAnnotations(newPodannotations);
 
