@@ -20,6 +20,7 @@ import io.kubernetes.client.openapi.models.V1DeploymentSpec;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import io.kubernetes.client.openapi.models.V1PodTemplateSpec;
 import io.kubernetes.client.util.Yaml;
+import org.jetbrains.annotations.NotNull;
 
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
@@ -64,6 +65,13 @@ public class WatchedResourceReconcilier<T extends KubernetesObject> implements R
             return new Result(false);
         }
 
+        return reconcileInstance(indexedObject);
+    }
+
+    @NotNull
+    private Result reconcileInstance(KubernetesObject indexedObject) {
+
+
         V1ObjectMeta resourceMetadata = indexedObject.getMetadata();
         String resourceName = resourceMetadata.getName();
         String resourceVersion = resourceMetadata.getResourceVersion();
@@ -76,6 +84,18 @@ public class WatchedResourceReconcilier<T extends KubernetesObject> implements R
             Boolean success = executeAction(indexedObject, actionSpec);
             resultList.put(actionSpec, success);
         }
+
+        int actionsCount = resultList.size();
+        long successCount = resultList.entrySet()
+                .stream()
+                .filter(Map.Entry::getValue)
+                .count();
+        boolean reschedule = false;
+        String rescheduleMessage = reschedule ? "Rescheduling" : "Not rescheduling";
+        String summaryMessage = MessageFormat.format("{0,number,#}/{1,number,#} actions completed successfully. {2}", actionsCount, successCount, rescheduleMessage);
+        ResourceWatcher.LOG.fine(summaryMessage);
+
+        // TODO: annotate resource to keep track of success/failed actions
 
         return new Result(false);
     }
@@ -145,7 +165,7 @@ public class WatchedResourceReconcilier<T extends KubernetesObject> implements R
         V1ObjectMeta podTemplateSpecMetadata = podTemplateSpec.getMetadata();
         HashMap<String, String> newPodannotations = new HashMap<>();
         Optional.ofNullable(podTemplateSpecMetadata.getAnnotations())
-                        .ifPresent(newPodannotations::putAll);
+                .ifPresent(newPodannotations::putAll);
         newPodannotations.put(annotationName, annotationValue);
         podTemplateSpecMetadata.setAnnotations(newPodannotations);
 
@@ -161,8 +181,7 @@ public class WatchedResourceReconcilier<T extends KubernetesObject> implements R
         }
     }
 
-    //easiest way (for devloper) is to just export and import
-    public static <T> T deepCopy(T rd) {
+    private static <T> T deepCopy(T rd) {
         Class<T> resourceClass = (Class<T>) rd.getClass();
         return Yaml.loadAs(Yaml.dump(rd), resourceClass);
     }
