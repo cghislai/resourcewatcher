@@ -44,3 +44,32 @@ watchedResourceList:
 The config file location is read from system env variable "RESOURCE_WATCHER_CONFIG_PATH", or "/var/run/config/resourcewatcher.yaml".
 
 
+### Required roles
+
+Im still working on chart to eases deployment of this container in a kubernetes cluster.
+
+In the meantime, you will probably need the service account running this container to have the following roles:
+
+- In the deployment namespace, ability to manage endpoints  
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+rules:
+  - apiGroups: [ "" ]
+    resources: [ "endpoints"]
+    verbs: [ "get", "update", "patch", "create", "delete" ]
+```
+
+- Cluster-wide, ability to create events
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+rules:
+  - apiGroups: [ "" ]
+    resources: [ "events" ]
+    verbs: [ "create", "patch" ]
+```
+- For the watched resources, ability to `[ "get", "list", "watch" ]`.
+  You may use a ClusterRole, and a RoleBinding to bind it in the required namespaces, or a namespaced role in the first place.
+
+- For the annotated resources (deployments only currently), ability to `[ "get", "list",  "update", "patch" ]`.
